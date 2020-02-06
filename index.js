@@ -5,6 +5,44 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function addValues( cont, titles, reviews, dates, ratings) {
+  let tempTitle = undefined;
+  while(tempTitle === undefined) {
+    try {
+      tempTitle = await cont.findElement(By.className('noQuotes'));
+    } catch(e) {};
+  }
+  tempTitle = await tempTitle.getText();
+  titles.push(tempTitle);
+  
+  let tempReview = undefined;
+  while(tempReview === undefined) {
+    try {
+      tempReview = await cont.findElement(By.className('partial_entry'));
+    } catch(e) {};
+  }
+  tempReview = await tempReview.getText();
+  reviews.push(tempReview);
+  
+  let tempDate = undefined;
+  while(tempDate === undefined) {
+    try {
+      tempDate = await cont.findElement(By.className('ratingDate'));
+    } catch(e) {};
+  }
+  tempDate = await tempDate.getText();
+  dates.push(tempDate);
+
+  let tempRating = undefined;
+  while(tempRating === undefined) {
+    try {
+      tempRating = await cont.findElement(By.className('ui_bubble_rating'));
+    } catch(e) {};
+  }
+  let classes = await tempRating.getAttribute('class');
+  ratings.push(parseInt(classes.charAt(24)));
+}
+
 (async function example() {
   let driver = await new Builder().forBrowser('firefox').build();
   let url = 'https://www.tripadvisor.com.sg/Attraction_Review-g294265-d4089881-Reviews-River_Safari-Singapore.html';
@@ -32,6 +70,7 @@ function sleep(ms) {
     let titles = [];
     let reviews = [];
     let dates = [];
+    let ratings = [];
     for(let i = 1; i <= last; i++) {
       console.log(`STARTING PAGE ${i}`);
       let pages = [];
@@ -84,64 +123,13 @@ function sleep(ms) {
           } catch(e) {};
         }
 
-
         if(location !== undefined ) {
           location = await location.getText();
           if(location.toLowerCase().includes('singapore')) {
-            let tempTitle = undefined;
-            while(tempTitle === undefined) {
-              try {
-                tempTitle = await cont.findElement(By.className('noQuotes'));
-              } catch(e) {};
-            }
-            tempTitle = await tempTitle.getText();
-            titles.push(tempTitle);
-            
-            let tempReview = undefined;
-            while(tempReview === undefined) {
-              try {
-                tempReview = await cont.findElement(By.className('partial_entry'));
-              } catch(e) {};
-            }
-            tempReview = await tempReview.getText();
-            reviews.push(tempReview);
-            
-            let tempDate = undefined;
-            while(tempDate === undefined) {
-              try {
-                tempDate = await cont.findElement(By.className('ratingDate'));
-              } catch(e) {};
-            }
-            tempDate = await tempDate.getText();
-            dates.push(tempDate);
+            await addValues(cont, titles, reviews, dates, ratings);
           }
         } else {
-          let tempTitle = undefined;
-          while(tempTitle === undefined) {
-            try {
-              tempTitle = await cont.findElement(By.className('noQuotes'));
-            } catch(e) {};
-          }
-          tempTitle = await tempTitle.getText();
-          titles.push(tempTitle);
-          
-          let tempReview = undefined;
-          while(tempReview === undefined) {
-            try {
-              tempReview = await cont.findElement(By.className('partial_entry'));
-            } catch(e) {};
-          }
-          tempReview = await tempReview.getText();
-          reviews.push(tempReview);
-          
-          let tempDate = undefined;
-          while(tempDate === undefined) {
-            try {
-              tempDate = await cont.findElement(By.className('ratingDate'));
-            } catch(e) {};
-          }
-          tempDate = await tempDate.getText();
-          dates.push(tempDate);
+          await addValues(cont, titles, reviews, dates, ratings)
         }
       }
     }
@@ -149,11 +137,11 @@ function sleep(ms) {
     var ws_name = 'sheet1';
 
     let ws_data = [[
-      'Title', 'Review', 'Date'
+      'Title', 'Review', 'Date', 'Rating'
     ]];
 
     for(let ii = 0; ii < titles.length; ii++) {
-      let temp = [titles[ii], reviews[ii], dates[ii]];
+      let temp = [titles[ii], reviews[ii], dates[ii], ratings[ii]];
       ws_data.push(temp);
     }
 
