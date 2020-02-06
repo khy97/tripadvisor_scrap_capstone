@@ -13,17 +13,17 @@ function sleep(ms) {
     // await driver.manage().window().fullscreen();
     let rating = undefined;
     while(rating === undefined) {
-        try {
-          rating = await driver.findElement(By.className('reviewCount'));
-        }catch(e) {}   
+      try {
+        rating = await driver.findElement(By.className('reviewCount'));
+      } catch(e) {}   
     }
     rating.click();
     
     let lastPage = undefined;
     while(lastPage === undefined) {
-        try {
-          lastPage = await driver.findElement(By.className('pageNum last '));
-        }catch(e) {}   
+      try {
+        lastPage = await driver.findElement(By.className('pageNum last '));
+      }catch(e) {}   
     }
     
     let last = await lastPage.getAttribute('data-page-number');
@@ -50,7 +50,7 @@ function sleep(ms) {
       }
 
       console.log('SLEEPING FOR PAGE LOAD');
-      await sleep(3500);
+      await sleep(2000);
       console.log('SLEPT WELL');
 
       console.log('pressing MORE button');
@@ -69,42 +69,82 @@ function sleep(ms) {
 
       await sleep(2000);
   
-      console.log('GETTING TITLES');
-      let tempTitles = [];
-      while(tempTitles.length === 0) {
-        tempTitles = await driver.findElements(By.className('noQuotes'));
+      let tempContainers = [];
+      while(tempContainers.length === 0) {
+        tempContainers = await driver.findElements(By.className('review-container'));
       }
-      for(let t of tempTitles) {
-        let val = await t.getText();
-        titles.push(val);
-      }
-      console.log("DONE TITLES");
-  
-      console.log('GETTING REVIEWS');
-      let tempReviews = [];
-      while(tempReviews.length === 0) {
-        tempReviews = await driver.findElements(By.className('partial_entry'));
-      }
-      for(let t of tempReviews) {
-        let val = await t.getText();
-        reviews.push(val);
-      }
-      console.log('DONE REVIEWS');
-  
-      console.log('GETTING DATES');
-      let tempDates = [];
-      while(tempDates.length === 0) {
-        tempDates = await driver.findElements(By.className('ratingDate'));
-      }
-      for(let t of tempDates) {
-        let val = await t.getText();
-        dates.push(val);
-      }
-      console.log('DONE DATES');
-      console.log(`DONE WITH PAGE ${i}`)
-    
-    }
 
+      for(let cont of tempContainers) {
+        let location = undefined;
+        let find = 1;
+        while(location === undefined && find < 1000) {
+          find++;
+          try {
+            location = await cont.findElement(By.className('userLoc'));
+          } catch(e) {};
+        }
+
+
+        if(location !== undefined ) {
+          location = await location.getText();
+          if(location.toLowerCase().includes('singapore')) {
+            let tempTitle = undefined;
+            while(tempTitle === undefined) {
+              try {
+                tempTitle = await cont.findElement(By.className('noQuotes'));
+              } catch(e) {};
+            }
+            tempTitle = await tempTitle.getText();
+            titles.push(tempTitle);
+            
+            let tempReview = undefined;
+            while(tempReview === undefined) {
+              try {
+                tempReview = await cont.findElement(By.className('partial_entry'));
+              } catch(e) {};
+            }
+            tempReview = await tempReview.getText();
+            reviews.push(tempReview);
+            
+            let tempDate = undefined;
+            while(tempDate === undefined) {
+              try {
+                tempDate = await cont.findElement(By.className('ratingDate'));
+              } catch(e) {};
+            }
+            tempDate = await tempDate.getText();
+            dates.push(tempDate);
+          }
+        } else {
+          let tempTitle = undefined;
+          while(tempTitle === undefined) {
+            try {
+              tempTitle = await cont.findElement(By.className('noQuotes'));
+            } catch(e) {};
+          }
+          tempTitle = await tempTitle.getText();
+          titles.push(tempTitle);
+          
+          let tempReview = undefined;
+          while(tempReview === undefined) {
+            try {
+              tempReview = await cont.findElement(By.className('partial_entry'));
+            } catch(e) {};
+          }
+          tempReview = await tempReview.getText();
+          reviews.push(tempReview);
+          
+          let tempDate = undefined;
+          while(tempDate === undefined) {
+            try {
+              tempDate = await cont.findElement(By.className('ratingDate'));
+            } catch(e) {};
+          }
+          tempDate = await tempDate.getText();
+          dates.push(tempDate);
+        }
+      }
+    }
     var wb = XLSX.utils.book_new();
     var ws_name = 'sheet1';
 
